@@ -1,5 +1,4 @@
 from flask import Flask, render_template, render_template_string, jsonify, request
-from datetime import datetime
 import folium
 
 app = Flask(__name__)
@@ -8,19 +7,13 @@ app = Flask(__name__)
 def home():
     return render_template('dashboard.html')
 
-@app.route('/get_time')
-def get_time():
-    try:
-        current_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        return jsonify({'datetime': current_time})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
-
 @app.route('/map')
 def map_view():
+    # Get latitude and longitude from query parameters
     lat = request.args.get('lat', type=float)
     lon = request.args.get('lon', type=float)
 
+    # Check if latitude and longitude are provided
     if lat is None or lon is None:
         return jsonify({'success': False, 'message': 'Please provide latitude and longitude as query parameters.'}), 400
 
