@@ -23,12 +23,12 @@ def logout():
 
 @app.route('/map')
 def map_view():
-    # Generate random coordinates near Medchal, Hyderabad
-    base_lat, base_lon = 17.6128, 78.4803  # Coordinates for Medchal, Hyderabad
+    
+    base_lat, base_lon = 17.6128, 78.4803  
     lat = base_lat + random.uniform(-0.01, 0.01)
     lon = base_lon + random.uniform(-0.01, 0.01)
 
-    # Create a Folium map centered at the random coordinates
+    # Create a Folium map centered 
     map = folium.Map(location=[lat, lon], zoom_start=15)
     folium.Marker([lat, lon], popup="Random Location near Medchal, Hyderabad").add_to(map)
 
