@@ -1,6 +1,5 @@
-from flask import Flask, render_template, jsonify, session, redirect, url_for, request, render_template_string
-import folium
-import random
+﻿from flask import Flask, render_template, jsonify, session, redirect, url_for, request
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Required for sessions
@@ -21,37 +20,10 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('home'))
 
-@app.route('/map')
-def map_view():
-    # Generate random coordinates near Medchal, Hyderabad
-    base_lat, base_lon = 17.6128, 78.4803  # Coordinates for Medchal, Hyderabad
-    
-    base_lat, base_lon = 17.6128, 78.4803  
-    lat = base_lat + random.uniform(-0.01, 0.01)
-    lon = base_lon + random.uniform(-0.01, 0.01)
-
-    # Create a Folium map centered at the random coordinates
-    # Create a Folium map centered 
-    map = folium.Map(location=[lat, lon], zoom_start=15)
-    folium.Marker([lat, lon], popup="Random Location near Medchal, Hyderabad").add_to(map)
-
-    # Generate the map HTML
-    map_html = map._repr_html_()
-
-    # Render the map HTML within a simple template
-    return render_template_string("""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>GPS Map</title>
-        </head>
-        <body>
-            <h1>GPS Map</h1>
-            <div>{{ map_html|safe }}</div>
-        </body>
-        </html>
-    """, map_html=map_html)
+@app.route('/get_time')
+def get_time():
+    current_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    return jsonify({'datetime': current_time})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=500)
