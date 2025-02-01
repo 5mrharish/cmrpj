@@ -1,51 +1,23 @@
-from flask import Flask, render_template, jsonify, session, redirect, url_for, request, render_template_string
+from flask import Flask, render_template, render_template_string, jsonify
 import folium
 
 app = Flask(__name__)
-  # Required for sessions
 
 @app.route('/')
 def home():
-    current_user = session.get('user')
-    return render_template_string("""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Home</title>
-        </head>
-        <body>
-            <h1>Welcome {{ current_user or 'Guest' }}</h1>
-            {% if current_user %}
-                <a href="{{ url_for('logout') }}">Logout</a>
-            {% else %}
-                <form action="{{ url_for('login') }}" method="post">
-                    <input type="text" name="username" placeholder="Enter your username">
-                    <button type="submit">Login</button>
-                </form>
-            {% endif %}
-        </body>
-        </html>
-    """, current_user=current_user)
+   
+    lat, lon = 17.6128, 78.4803  
+   
+    lat, lon = 17.6128, 78.4803  
 
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.form
-    session['user'] = data.get('username')
-    return redirect(url_for('home'))
+    # Create a Folium map centered at the given coordinates
+    map = folium.Map(location=[lat, lon], zoom_start=15)
+    folium.Marker([lat, lon], popup="Medchal, Hyderabad").add_to(map)
 
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect(url_for('home'))
+    # Generate the map HTML
+    map_html = map._repr_html_()
 
-@app.route('/map')
-def map_view():
-    lat, lon = 17.6128, 78.4803
-    map_object = folium.Map(location=[lat, lon], zoom_start=15)
-    folium.Marker([lat, lon], popup="Medchal, Hyderabad").add_to(map_object)
-    map_html = map_object._repr_html_()
-    
+    # Render the map HTML within a simple template
     return render_template_string("""
         <!DOCTYPE html>
         <html lang="en">
@@ -56,10 +28,9 @@ def map_view():
         <body>
             <h1>GPS Map</h1>
             <div>{{ map_html|safe }}</div>
-            <p><a href="/">Back to Home</a></p>
         </body>
         </html>
     """, map_html=map_html)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)
