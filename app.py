@@ -1,4 +1,4 @@
-﻿from flask import Flask, render_template, jsonify, session, redirect, url_for, request
+from flask import Flask, render_template, jsonify, session, redirect, url_for, request
 from datetime import datetime
 
 app = Flask(__name__)
