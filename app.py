@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, redirect, url_for, request
+from flask import Flask, render_template, render_template_string, jsonify, request
 from datetime import datetime
 import folium
 
