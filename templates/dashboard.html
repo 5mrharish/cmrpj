@@ -1,57 +1,177 @@
-from flask import Flask, render_template, jsonify, session, redirect, url_for, request
-import folium
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Child Safety System - Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <style>
+        /* Ensure the map container has a height */
+        #map {
+            height: 500px;
+        }
+    </style>
+</head>
+<body class="homepage">
+    <!-- Header Navigation -->
+    <nav class="header-nav">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>Child Safety Tracker</span>
+        </div>
+        <div class="nav-buttons">
+            {% if current_user %}
+                <span class="user-welcome">Welcome, {{ current_user }}</span>
+                <a href="{{ url_for('logout') }}" class="nav-btn logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            {% else %}
+                <button id="loginBtn" class="nav-btn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            {% endif %}
+        </div>
+    </nav>
 
-app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Required for sessions
+    <div class="main-container">
+        <!-- Display Coordinates -->
+        <div class="coordinates-display">
+            <h2>Current Coordinates</h2>
+            <p>Latitude: {{ coordinates.lat }}</p>
+            <p>Longitude: {{ coordinates.lon }}</p>
+        </div>
 
-@app.route('/')
-def home():
-    current_user = session.get('user')
-    return render_template_string("""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Dashboard</title>
-        </head>
-        <body>
-            <h1>Welcome {{ current_user if current_user else 'Guest' }}</h1>
-            <form action="/logout" method="get"><button type="submit">Logout</button></form>
-        </body>
-        </html>
-    """, current_user=current_user)
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h1>Keeping Children Safe in a Connected World</h1>
+            <p>Monitor, protect, and ensure the safety of your children with real-time tracking and smart zones.</p>
+        </section>
 
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    session['user'] = data.get('username')
-    return jsonify({'success': True})
+        <!-- Features Section -->
+        <div class="features-section">
+            <div class="feature-card">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>Real-time Tracking</h3>
+                <p>Monitor location updates in real-time</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Safe Zones</h3>
+                <p>Create and manage safety boundaries</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-bell"></i>
+                <h3>Instant Alerts</h3>
+                <p>Get notifications for zone violations</p>
+            </div>
+        </div>
 
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect(url_for('home'))
+        <!-- Map Section -->
+        <div class="map-section">
+            <div class="card map-card">
+                <h3><i class="fas fa-map-marked-alt"></i> Safety Map</h3>
+                <div class="map-controls">
+                    <div class="map-buttons">
+                        <button id="saveZonesBtn" class="control-btn">
+                            <i class="fas fa-save"></i> Save Zones
+                        </button>
+                        <button id="clearZonesBtn" class="control-btn">
+                            <i class="fas fa-trash-alt"></i> Clear All
+                        </button>
+                    </div>
+                    <div class="zone-legend">
+                        <div class="legend-item">
+                            <span class="legend-color safe"></span> Safe Zone
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color danger"></span> Danger Zone
+                        </div>
+                    </div>
+                </div>
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
 
-@app.route('/map')
-def map_view():
-    lat, lon = 17.6128, 78.4803
-    map_object = folium.Map(location=[lat, lon], zoom_start=15)
-    folium.Marker([lat, lon], popup="Medchal, Hyderabad").add_to(map_object)
-    map_html = map_object._repr_html_()
+    <!-- Footer with DateTime -->
+    <footer class="footer">
+        <div class="datetime-display">
+            <i class="fas fa-clock"></i>
+            <span id="currentDateTime"></span>
+        </div>
+    </footer>
 
-    return render_template_string("""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>GPS Map</title>
-        </head>
-        <body>
-            <h1>GPS Map</h1>
-            <div>{{ map_html|safe }}</div>
-        </body>
-        </html>
-    """, map_html=map_html)
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-user"></i> Login</h3>
+            <form id="loginForm">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="loginUsername" name="username" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPassword" name="password" placeholder="Password" required>
+                </div>
+                <div id="loginMessage" class="message"></div>
+                <div class="buttons">
+                    <button type="submit" class="submit-btn">Login</button>
+                    <button type="button" class="cancel-btn">Cancel</button>
+                </div>
+                <p class="register-link">New user? <a href="#" id="showRegister">Register here</a></p>
+            </form>
+        </div>
+    </div>
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-user-plus"></i> Register</h3>
+            <form id="registerForm">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="regUsername" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="regEmail" placeholder="Email" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="regPassword" placeholder="Password" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+                </div>
+                <div class="buttons">
+                    <button type="submit" class="submit-btn">Register</button>
+                    <button type="button" class="cancel-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Include necessary JavaScript libraries -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script>
+        // Initialize the map and set its view to our chosen geographical coordinates and a zoom level
+        var map = L.map('map').setView([{{ coordinates.lat }}, {{ coordinates.lon }}], 15);
+
+        // Add a tile layer to the map (the background map)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Add a marker to the map at the given coordinates
+        L.marker([{{ coordinates.lat }}, {{ coordinates.lon }}]).addTo(map)
+            .bindPopup('Medchal, Hyderabad')
+            .openPopup();
+    </script>
+</body>
+</html>
