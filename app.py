@@ -5,8 +5,8 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    # Center the map at a specific location near Medchal, Hyderabad
-    lat, lon = 17.6128, 78.4803  # Coordinates for Medchal, Hyderabad
+   
+    lat, lon = 17.6128, 78.4803  
 
     # Create a Folium map centered at the given coordinates
     map = folium.Map(location=[lat, lon], zoom_start=15)
